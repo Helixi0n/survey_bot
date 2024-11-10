@@ -1,6 +1,6 @@
 import telebot, json
 
-TOKEN = '7785725331:AAH9GkvMejzS6fP_06kwUXBcmkytj663A10'
+TOKEN = ''
 
 bot = telebot.TeleBot(TOKEN)
 keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
