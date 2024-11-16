@@ -1,9 +1,9 @@
 import telebot, json
 
-TOKEN = ''
-
+TOKEN = '7785725331:AAH9GkvMejzS6fP_06kwUXBcmkytj663A10'
 bot = telebot.TeleBot(TOKEN)
 keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+btn_back = telebot.types.InlineKeyboardButton("Вернуться назад", callback_data="back")
 
 
 @bot.message_handler(commands=['start'])
@@ -23,8 +23,8 @@ def handle_start(message):
         reply_markup=keyboard)
 
 
-@bot.callback_query_handler(func=lambda callback: callback == 'back')
-def handle_start(callback):
+@bot.callback_query_handler(func=lambda callback: callback.data == 'back')
+def main_menu(callback):
     global keyboard
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     btn_survey_choice = telebot.types.InlineKeyboardButton('Пройти опрос', callback_data='1')
@@ -34,7 +34,8 @@ def handle_start(callback):
         btn_survey_choice,
         btn_completed_survey,
         btn_make_survey)
-    bot.edit_message_text('Привет! Я - бот-опросник. \nЗдесь регулярно будут появляться опросы на разные темы, которые ты можешь пройти. Не хочешь пройти мой опрос? \nЕсли что-то не понятно - нажми /help',
+    bot.edit_message_text(
+        'Выбери действие:',
         callback.message.chat.id,
         callback.message.id,
         reply_markup=keyboard)
@@ -42,28 +43,24 @@ def handle_start(callback):
 
 @bot.message_handler(commands=['help'])
 def handle_help(message):
+    global keyboard
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(btn_back)
     bot.send_message(
         message.chat.id,
-        'Вот список моих команд: \n/start - запуск бота \n/help - список команд \n')
-
-
-def create_dict(**qwargs):
-    d = {k: v for k, v in qwargs.items()}
-    return d
+        'Вот список моих команд: \n/start - запуск бота \n/help - список команд \n',
+        reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda callback: callback.data == '1')
 def survey_choice(callback):
     global keyboard
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    with open(f'Users/{callback.message.chat.id}.json', 'w', encoding="utf-8") as file:
+        json.dump({}, file)
     for elem in json.load(open(f'Polls/survey.json', 'rb')).keys():
         keyboard.add(telebot.types.InlineKeyboardButton(elem, callback_data=elem))
-    keyboard.add(telebot.types.InlineKeyboardButton("Вернуться назад", callback_data="back"))
-    if len(json.load(open(f'Polls/survey.json', 'rb')).keys()) == 0:
-        with open(f'Users/{callback.message.chat.id}.json', 'w', encoding="utf-8") as f:
-            data = create_dict()
-            json.dump(data, file=f)
-
+    keyboard.add(btn_back)
     bot.edit_message_text(
         'Выбери интересующий тебя опрос:',
         callback.message.chat.id,
@@ -79,7 +76,7 @@ def completed_survey(callback):
     completed = ''
     for elem in json.load(open(f'Users/{callback.message.chat.id}.json', 'rb')).keys():
         completed += f'{elem} \n'
-    keyboard.add(telebot.types.InlineKeyboardButton("Вернуться назад", callback_data="back"))
+    keyboard.add(btn_back)
     bot.edit_message_text(
         f'Вот список опросов, которые ты прошел: \n{completed}',
         callback.message.chat.id,
