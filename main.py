@@ -1,6 +1,6 @@
 import telebot, json
 
-TOKEN = '7785725331:AAH9GkvMejzS6fP_06kwUXBcmkytj663A10'
+TOKEN = ''
 bot = telebot.TeleBot(TOKEN)
 keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
 btn_back = telebot.types.InlineKeyboardButton("Вернуться назад", callback_data="back")
@@ -58,7 +58,7 @@ def survey_choice(callback):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     with open(f'Users/{callback.message.chat.id}.json', 'w', encoding="utf-8") as file:
         json.dump({}, file)
-    for elem in json.load(open(f'Polls/survey.json', 'rb')).keys():
+    for elem in json.load(open(f'survey.json', 'rb')).keys():
         keyboard.add(telebot.types.InlineKeyboardButton(elem, callback_data=elem))
     keyboard.add(btn_back)
     bot.edit_message_text(
@@ -83,6 +83,12 @@ def completed_survey(callback):
         callback.message.id,
         reply_markup=keyboard
     )
+
+
+@bot.callback_query_handler(func=lambda callback: callback in json.load(open(f'survey.json', 'rb')).keys())
+def survey(callback):
+    srv = json.load(open(f'survey.json', 'rb'))[callback]
+
 
 
 print('Сервер запущен.')
