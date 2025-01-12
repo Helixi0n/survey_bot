@@ -1,6 +1,6 @@
 import telebot, json
+from survey_bot.constants import TOKEN
 
-TOKEN = ''
 bot = telebot.TeleBot(TOKEN)
 keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
 btn_back = telebot.types.InlineKeyboardButton("Вернуться назад", callback_data="back")
