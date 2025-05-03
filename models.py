@@ -1,58 +1,59 @@
-from survey_bot.database import get_connection
+from database import get_connection, Survey, Question
+
+session = get_connection()
 
 class Model:
     @staticmethod
     def add_survey(user_id, title, description):
-        connection = get_connection()
-        cursor = connection.execute(
-            f'''
-            INSERT INTO survey (user_id, title, desription)
-            VALUES ({user_id}, '{title}', '{description}')
-            '''
-        )
-        connection.commit()
-        connection.close()
+        survey = Survey(title=title, description=description, user_id=user_id, passed=0)
+        session.add(survey)
+        session.commit()
+        session.close()
 
     @staticmethod
-    def update_survey(survey_id, question):
-        connection = get_connection()
-        cursor = connection.execute(
-            f'''
-            INSERT INTO questions (survey_id, question)
-            VALUES ({survey_id}, '{question}')
-            '''
-        )
-        connection.commit()
-        connection.close()
+    def update_survey(survey_id, question_title, *answer):
+        answers = {}
+        for ans in answer:
+            answers[ans] = 0
+
+        question = Question(survey_id=survey_id, question_title=question_title, answers=answers)
+        session.add(question)
+        session.commit()
+        session.close()
 
     @staticmethod
     def delete_survey(survey_id):
-        connection = get_connection()
-        cursor = connection.execute(
-            f'''
-            DELETE FROM questions
-            WHERE survey_id = {survey_id}
+        for_del = session.query(Survey).filter(Survey.id == survey_id).one()
+        session.delete(for_del)
 
-            DELETE FROM survey 
-            WHERE id = {survey_id};
-            '''
-        )
-        connection.commit()
-        connection.close()
+        for_del = session.query(Question).filter(Question.survey_id == survey_id).all()
+        session.delete(for_del)
+
+        session.commit()
 
     @staticmethod
     def get_my_survey(user_id):
-        connection = get_connection()
-        cursor = connection.execute(
-            f'''
-            SELECT title, id
-            FROM survey
-            WHERE user_id = {user_id}
-            '''
-        )
-        survey = cursor.fetchall()
-        connection.close()
-        return survey
+        my_survey = session.query(Survey).filter(Survey.user_id == user_id).all()
+        survey_list = []
+
+        for survey in my_survey:
+            survey_list.append(survey.title)
+
+        return survey_list
+    
+    @staticmethod
+    def get_results(survey_id):
+        pass
+    
+    @staticmethod
+    def get_survey_list(user_id):
+        survey = session.query(Survey).filter(Survey.user_id != user_id).all()
+        survey_list = []
+
+        for surv in survey:
+            survey_list.append(surv)
+
+        return survey_list
 
     @staticmethod
     def complete_survey(user_id, survey_id):

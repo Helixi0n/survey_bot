@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, Text, String, JSON, Forei
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine('sqlite:///school.db')
+engine = create_engine('sqlite:///data.db')
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -44,5 +44,7 @@ def init_db():
     BaseModel.metadata.create_all(engine)
 
 def get_connection():
-    engine = create_engine('sqlite:///data.db')
-    return sessionmaker(bind=engine)
+    engine = create_engine("sqlite:///data.db")
+    BaseModel.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    return Session()
