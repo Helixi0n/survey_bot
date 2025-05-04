@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, Text, String, JSON, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, Text, String, JSON, ForeignKey, Table
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -9,12 +9,20 @@ session = Session()
 
 BaseModel = declarative_base()
 
+user_survey_association = Table(
+    'user_survey_association',
+    BaseModel.metadata,
+    Column('user_id', Integer, ForeignKey('user.id'), primary_key=True),
+    Column('survey_id', Integer, ForeignKey('survey.id'), primary_key=True)
+)
+
 class User(BaseModel):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
     username = Column(String)
 
+    complete_surveys = relationship('Survey', secondary=user_survey_association, back_populates='users')
     survey = relationship('Survey', back_populates='user_id')
 
 class Survey(BaseModel):
@@ -25,7 +33,8 @@ class Survey(BaseModel):
     title = Column(String)
     description = Column(Text)
     user_id = Column(Integer, ForeignKey('user.id'))
-    
+
+    complete_users = relationship('User', secondary=user_survey_association, back_populates='surveys')
     user = relationship('User', back_populates='survey')
     questions = relationship('Question', back_populates='survey')
 

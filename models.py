@@ -4,6 +4,12 @@ session = get_connection()
 
 class Model:
     @staticmethod
+    def my_survey(survey_id):
+        survey = session.query(Survey).filter(Survey.id == survey_id).first()
+
+        return survey
+
+    @staticmethod
     def add_survey(user_id, title, description):
         survey = Survey(title=title, description=description, user_id=user_id, passed=0)
         session.add(survey)
@@ -32,12 +38,12 @@ class Model:
         session.commit()
 
     @staticmethod
-    def get_my_survey(user_id):
+    def get_my_survey_list(user_id):
         my_survey = session.query(Survey).filter(Survey.user_id == user_id).all()
         survey_list = []
 
         for survey in my_survey:
-            survey_list.append(survey.title)
+            survey_list.append([survey.title, survey.id])
 
         return survey_list
     
@@ -46,7 +52,7 @@ class Model:
         pass
     
     @staticmethod
-    def get_survey_list(user_id):
+    def get_not_completed_survey_list(user_id):
         survey = session.query(Survey).filter(Survey.user_id != user_id).all()
         survey_list = []
 
