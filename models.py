@@ -10,7 +10,7 @@ class Model:
         return survey
 
     @staticmethod
-    def add_survey(user_id, title, description):
+    def add_survey(title, description, user_id):
         survey = Survey(title=title, description=description, user_id=user_id, passed=0)
         session.add(survey)
         session.commit()
@@ -49,8 +49,14 @@ class Model:
     
     @staticmethod
     def get_results(survey_id):
-        pass
-    
+        questions = session.query(Question).filter(Question.survey_id == survey_id).all()
+        result = {}
+
+        for question in questions:
+            result[question.id] = question.answers_data
+
+        return result
+
     @staticmethod
     def get_not_completed_survey_list(user_id):
         survey = session.query(Survey).filter(Survey.user_id != user_id).all()

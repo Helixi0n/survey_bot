@@ -22,8 +22,8 @@ class User(BaseModel):
     id = Column(Integer, primary_key=True)
     username = Column(String)
 
-    complete_surveys = relationship('Survey', secondary=user_survey_association, back_populates='users')
-    survey = relationship('Survey', back_populates='user_id')
+    complete_surveys = relationship('Survey', secondary=user_survey_association, back_populates='complete_users')
+    survey = relationship('Survey', back_populates='user')
 
 class Survey(BaseModel):
     __tablename__ = 'survey'
@@ -34,7 +34,7 @@ class Survey(BaseModel):
     description = Column(Text)
     user_id = Column(Integer, ForeignKey('user.id'))
 
-    complete_users = relationship('User', secondary=user_survey_association, back_populates='surveys')
+    complete_users = relationship('User', secondary=user_survey_association, back_populates='complete_surveys')
     user = relationship('User', back_populates='survey')
     questions = relationship('Question', back_populates='survey')
 
