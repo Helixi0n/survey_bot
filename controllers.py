@@ -3,6 +3,8 @@ from models import Model
 
 title = ''
 description = ''
+question = ''
+survey_id_in_work = 0
 
 class Controller:
     def __init__(self, bot):
@@ -26,13 +28,13 @@ class Controller:
         def main_menu(callback):
             keyboard = types.InlineKeyboardMarkup(row_width=1)
             buttons = [
-                types.InlineKeyboardButton('Создать опрос', callback_data='add_survey'),
                 types.InlineKeyboardButton('Пройти опрос', callback_data='complete_survey'),
+                types.InlineKeyboardButton('Создать опрос', callback_data='add_survey'),
                 types.InlineKeyboardButton('Мои опросы', callback_data='my_surveys')
             ]
             keyboard.add(*buttons)
 
-            self.bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.id, text=f'Привет! 😀 \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', reply_markup=keyboard)
+            self.bot.edit_message_text(f'Привет! 😀 \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', callback.message.chat.id, callback.message.id, reply_markup=keyboard)
 
 
         @self.bot.callback_query_handler(func=lambda callback: callback.data == 'my_surveys')
@@ -53,8 +55,7 @@ class Controller:
             buttons.append(types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
 
             keyboard.add(*buttons)
-            msg = self.bot.send_message(callback.message.chat.id, reply, reply_markup=keyboard)
-            self.bot.register_next_step_handler(msg, lambda call: self.my_survey(call))
+            self.bot.edit_message_text(reply, callback.message.chat.id, callback.message.id, reply_markup=keyboard)
 
         @self.bot.callback_query_handler(func=lambda callback: callback.data.startswith('survey_'))
         def my_survey(callback):
@@ -82,11 +83,16 @@ class Controller:
             Model.delete_survey(int(callback.data[14:]))
 
             self.bot.edit_message_text('Опрос удален. \nВыберите действие:', callback.message.chat.id, callback.message.id, reply_markup=keyboard)
-            
+
+        
+        @self.bot.callback_query_handler(func=lambda callback: callback.data.startswith('update_survey_'))
+        def update_survey(callback):
+            msg = self.bot.edit_message_text('Введите вопрос:')
+            self.bot.register_next_step_handler(msg, lambda m: self.get_question_title(m))
 
         @self.bot.callback_query_handler(func=lambda callback: callback.data == 'add_survey')
         def add_survey(callback):
-            msg = self.bot.send_message(callback.message.chat.id, 'Введите название вашего опроса:')
+            msg = self.bot.edit_message_text('Введите название вашего опроса:', callback.message.chat.id, callback.message.id)
             self.bot.register_next_step_handler(msg, lambda m: self.title_text(m))
             
 
@@ -108,3 +114,16 @@ class Controller:
 
         Model.add_survey(title=title, description=description, user_id=message.chat.id)
         self.bot.send_message(message.chat.id, 'Опрос добавлен! \nВыберите действие:', reply_markup=keyboard)
+
+    
+    def get_question_title(self, message):
+        global question
+        question = message.text
+
+        msg = self.bot.send_message(message.chat.id, 'Введите варианты ответа (каждый на новой строке):')
+        self.bot.register_next_step_handler(msg, lambda m: self.get_answers)
+
+    def get_answers(self, message):
+        answers = message.split('\n')
+
+        

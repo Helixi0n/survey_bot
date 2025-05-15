@@ -9,12 +9,14 @@ class Model:
 
         return survey
 
+
     @staticmethod
     def add_survey(title, description, user_id):
         survey = Survey(title=title, description=description, user_id=user_id, passed=0)
         session.add(survey)
         session.commit()
         session.close()
+
 
     @staticmethod
     def update_survey(survey_id, question_title, *answer):
@@ -27,6 +29,7 @@ class Model:
         session.commit()
         session.close()
 
+
     @staticmethod
     def delete_survey(survey_id):
         session.query(Survey).filter(Survey.id == survey_id).delete()
@@ -35,6 +38,7 @@ class Model:
 
         session.commit()
         session.close()
+
 
     @staticmethod
     def get_my_survey_list(user_id):
@@ -46,6 +50,7 @@ class Model:
 
         return survey_list
     
+
     @staticmethod
     def get_results(survey_id):
         questions = session.query(Question).filter(Question.survey_id == survey_id).all()
@@ -56,6 +61,7 @@ class Model:
 
         return result
 
+
     @staticmethod
     def get_not_completed_survey_list(user_id):
         survey = session.query(Survey).filter(Survey.user_id != user_id).all()
@@ -65,6 +71,7 @@ class Model:
             survey_list.append(surv)
 
         return survey_list
+
 
     @staticmethod
     def complete_survey(user_id, survey_id):
