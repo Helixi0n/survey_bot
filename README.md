@@ -18,6 +18,12 @@ TOKEN = '0000000000:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 pip install -r requirements.txt
 ```
 
+### Необходимо инициализировать базу данных:
+
+```comandline
+python utils.py
+```
+
 ### Запуск 
 
 ```comandline
