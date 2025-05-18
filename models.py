@@ -102,5 +102,11 @@ class Model:
 
         for quest in questions:
             question[quest.question_title] = quest.answers_data
+
+        return question
+    
+    @staticmethod
+    def write_answers(survey_id, *user_answers):
+        questions = session.query(Question).filter(Question.survey_id == survey_id).all()
+
         
-        return questions
