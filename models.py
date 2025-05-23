@@ -1,4 +1,5 @@
-from database import get_connection, Survey, Question, User
+from database import get_connection, Survey, Question, User, user_survey_association
+from sqlalchemy import select, create_engine
 
 session = get_connection()
 
@@ -87,10 +88,17 @@ class Model:
     @staticmethod
     def find_not_completed_survey_list(user_id):
         survey = session.query(Survey).filter(Survey.user_id != user_id).all()
+
+        query = select(user_survey_association.c.survey_id).where(
+        user_survey_association.c.user_id == user_id)
+
+        result = session.execute(query)
+        completed = [row[0] for row in result]
         survey_list = []
 
         for surv in survey:
-            survey_list.append([surv.title, surv.id])
+            if surv.id not in completed:
+                survey_list.append([surv.title, surv.id])
 
         return survey_list
 
@@ -106,7 +114,23 @@ class Model:
         return question
     
     @staticmethod
-    def write_answers(survey_id, *user_answers):
-        questions = session.query(Question).filter(Question.survey_id == survey_id).all()
+    def write_answers(survey_id, user_answers, user_id):
+        survey = session.query(Survey).filter(Survey.id == survey_id).first()
+        survey.passed += 1
 
+        questions = session.query(Question).filter(Question.survey_id == survey_id).all()
+        quests = user_answers.keys()
         
+        for question in questions:
+            for quest in quests:
+                if question == quest:
+                    answer = user_answers[quest]
+                    answers_data = question.answers_data
+                    answers_data[answer] += 1
+                    question.answers_data = answers_data
+                    
+        association = user_survey_association.insert().values(user_id=user_id, survey_id=survey_id)
+        session.execute(association)
+        
+        session.commit()
+        session.close()

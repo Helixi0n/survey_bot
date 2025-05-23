@@ -7,6 +7,7 @@ question = {}
 survey_id_in_work = {}
 user_states = {}
 user_answers = {}
+survey_complete = {}
 
 class Controller:
     def __init__(self, bot):
@@ -146,39 +147,48 @@ class Controller:
 
         @self.bot.callback_query_handler(func=lambda callback: callback.data.startswith('complete_survey_'))
         def complete_survey(callback: types.CallbackQuery):
-            survey_id = callback.data.strip('complete_survey_')
+            survey_complete[callback.message.chat.id] = callback.data.strip('complete_survey_')
+
+            survey_id = survey_complete[callback.message.chat.id]
+
             questions = Model.get_questions(survey_id)
+
             user_states[callback.message.chat.id] = iter(questions.items())
             user_answers[callback.message.chat.id] = {}
-            send_next_question(callback.data)
+
+            send_next_question(callback, survey_id)    
 
 
-        @self.bot.callback_query_handler(func=lambda call: call.data.startswith('answer_'))
-        def handle_answer(callback):
-            selected_answer = callback.data.split('answer_')
+        @self.bot.callback_query_handler(func=lambda callback: callback.data.startswith('answer_'))
+        def handle_answer(callback: types.CallbackQuery):
+            survey_id = survey_complete[callback.message.chat.id]
+
+            selected_answer = callback.data.strip('answer_')
     
             current_question = callback.message.text
     
             user_answers[callback.message.chat.id][current_question] = selected_answer
     
-            self.bot.answer_callback_query(callback.id, text=f"Вы выбрали: {selected_answer}")
-    
-            send_next_question(callback)
+            send_next_question(callback, survey_id)
 
         
-        def send_next_question(callback):
+        def send_next_question(callback, survey_id):
                 try:
                     question, answers = next(user_states[callback.message.chat.id])
                     keyboard = types.InlineKeyboardMarkup(row_width=1)
         
                     for answer in answers:
-                        keyboard.add(types.InlineKeyboardButton(text=answer, callback_data=answer))
+                        keyboard.add(types.InlineKeyboardButton(text=answer, callback_data=f'answer_{answer}'))
 
                         self.bot.edit_message_text(question, callback.message.chat.id, callback.message.id, reply_markup=keyboard)
     
                 except StopIteration:
-                    self.bot.edit_message_text("Опрос завершен!", callback.message.chat.id, callback.message.id)
-                    Model.write_answers(user_answers[callback.message.chat.id])
+                    keyboard = types.InlineKeyboardMarkup(row_width=1)
+                    keyboard.add(types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
+                    self.bot.edit_message_text("Опрос завершен!", callback.message.chat.id, callback.message.id, reply_markup=keyboard)
+
+                    Model.write_answers(survey_id, user_answers[callback.message.chat.id], callback.message.chat.id)
+
                     del user_states[callback.message.chat.id]
                     del user_answers[callback.message.chat.id]
 
