@@ -214,7 +214,7 @@ class Controller:
     def title_text(self, message):
         global title
         title[message.chat.id] = message.text
-        msg = self.bot.send_message(message.chat.id, 'Введите описание вашего опроса (необязательно):')
+        msg = self.bot.send_message(message.chat.id, 'Введите описание вашего опроса:')
         self.bot.register_next_step_handler(msg, lambda m: self.description_text(m))
 
 
