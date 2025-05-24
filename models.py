@@ -1,5 +1,5 @@
 from database import get_connection, Survey, Question, User, user_survey_association
-from sqlalchemy import select, create_engine
+from sqlalchemy import select, delete
 
 session = get_connection()
 
@@ -36,11 +36,22 @@ class Model:
     @staticmethod
     def update_survey(survey_id, question_title, answer):
         answers_data = {}
+
+        quest = session.query(Question).filter(Question.survey_id == survey_id).all()
+        for answer in quest:
+            for key, value in answer.answers_data.items():
+                answers_data[key] = 0
+        
         for ans in answer.split('\n'):
             answers_data[ans] = 0
 
         question = Question(survey_id=survey_id, question_title=question_title, answers_data=answers_data)
         session.add(question)
+
+        stmt = delete(user_survey_association).where(
+        user_survey_association.c.survey_id == survey_id)
+
+        session.execute(stmt)
         session.commit()
         session.close()
 
@@ -48,9 +59,11 @@ class Model:
     @staticmethod
     def delete_survey(survey_id):
         session.query(Survey).filter(Survey.id == survey_id).delete()
-
         session.query(Question).filter(Question.survey_id == survey_id).delete()
+        stmt = delete(user_survey_association).where(
+        user_survey_association.c.survey_id == survey_id)
 
+        session.execute(stmt)
         session.commit()
         session.close()
 

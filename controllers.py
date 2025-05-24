@@ -145,6 +145,20 @@ class Controller:
             self.bot.register_next_step_handler(msg, lambda m: self.title_text(m))
 
 
+        @self.bot.callback_query_handler(func=lambda callback: callback.startswith('results_'))
+        def get_results(callback: types.CallbackQuery):
+            msg = ''
+            for question, answers in Model.get_results(callback.strip('results_')).items():
+                msg += f'{question}:\n'
+                for answ, count in answers.items():
+                    msg += f'   {answ}: {count}'
+            msg += 'Выберите действие:'
+            
+            keyboard = types.InlineKeyboardMarkup(row_width=1)
+            keyboard.add(types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
+            self.bot.edit_message_text(msg, callback.message.chat.id, callback.message.id, reply_markup=keyboard)
+
+
         @self.bot.callback_query_handler(func=lambda callback: callback.data.startswith('complete_survey_'))
         def complete_survey(callback: types.CallbackQuery):
             survey_complete[callback.message.chat.id] = callback.data.strip('complete_survey_')
