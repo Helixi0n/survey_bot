@@ -28,7 +28,7 @@ class Controller:
             Model.is_user_in_base(message.chat.id, message.from_user.username)
 
 
-            self.bot.send_message(message.chat.id, f'Привет! 😀 \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', reply_markup=keyboard)
+            self.bot.send_message(message.chat.id, f'Привет!  \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', reply_markup=keyboard)
 
 
         @self.bot.callback_query_handler(func=lambda callback: callback.data == 'main_menu')
@@ -41,7 +41,7 @@ class Controller:
             ]
             keyboard.add(*buttons)
 
-            self.bot.edit_message_text(f'Привет! 😀 \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', callback.message.chat.id, callback.message.id, reply_markup=keyboard)
+            self.bot.edit_message_text(f'Привет!  \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', callback.message.chat.id, callback.message.id, reply_markup=keyboard)
 
 
         @self.bot.callback_query_handler(func=lambda callback: callback.data == 'my_surveys')
@@ -145,13 +145,16 @@ class Controller:
             self.bot.register_next_step_handler(msg, lambda m: self.title_text(m))
 
 
-        @self.bot.callback_query_handler(func=lambda callback: callback.startswith('results_'))
+        @self.bot.callback_query_handler(func=lambda callback: callback.data.startswith('results_'))
         def get_results(callback: types.CallbackQuery):
             msg = ''
-            for question, answers in Model.get_results(callback.strip('results_')).items():
-                msg += f'{question}:\n'
-                for answ, count in answers.items():
-                    msg += f'   {answ}: {count}'
+            for question, answers in Model.get_results(callback.data.strip('results_')).items():
+                if not question:
+                    msg = 'Опрос пуст.\n'
+                else:
+                    msg += f'{question}:\n'
+                    for answ, count in answers.items():
+                        msg += f'   {answ}: {count}\n'
             msg += 'Выберите действие:'
             
             keyboard = types.InlineKeyboardMarkup(row_width=1)

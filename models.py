@@ -85,7 +85,7 @@ class Model:
         result = {}
 
         for question in questions:
-            result[question.id] = question.answers_data
+            result[question.question_title] = question.answers_data
 
         return result
 
@@ -132,16 +132,15 @@ class Model:
         survey.passed += 1
 
         questions = session.query(Question).filter(Question.survey_id == survey_id).all()
-        quests = user_answers.keys()
+        data = user_answers.items()
         
         for question in questions:
-            for quest in quests:
-                if question == quest:
-                    answer = user_answers[quest]
-                    answers_data = question.answers_data
-                    answers_data[answer] += 1
-                    question.answers_data = answers_data
-                    
+            for key, value in data:
+                answers_data = question.answers_data
+                if key == question.question_title:
+                    answers_data[value] += 1
+            question.answers_data = answers_data
+                
         association = user_survey_association.insert().values(user_id=user_id, survey_id=survey_id)
         session.execute(association)
         
