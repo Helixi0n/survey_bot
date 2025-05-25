@@ -30,7 +30,7 @@ class Controller:
 
 
             self.bot.send_message(message.chat.id, 
-                                  f'Привет!  \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', 
+                                  f'Привет!  \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других пользователей. \nВыбери действие:', 
                                   reply_markup=keyboard)
 
 
@@ -44,7 +44,7 @@ class Controller:
             ]
             keyboard.add(*buttons)
 
-            self.bot.edit_message_text(f'Привет!  \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других людей. \nВыбери действие:', 
+            self.bot.edit_message_text(f'Привет!  \nЭто бот-опросник. Здесь ты можешь создавать свои опросы на разные темы и проходить опросы других пользователей. \nВыбери действие:', 
                                        callback.message.chat.id, 
                                        callback.message.id, 
                                        reply_markup=keyboard)
@@ -103,7 +103,7 @@ class Controller:
             if Model.is_this_my_survey(callback.message.chat.id, survey.id):
                 buttons = [
                 types.InlineKeyboardButton('Добавить вопрос', callback_data=f'update_survey_{survey.id}'),
-                types.InlineKeyboardButton('Удалить опрос', callback_data=f'delete_survey_{survey.id}'),
+                types.InlineKeyboardButton('Удалить опрос ❌', callback_data=f'delete_survey_{survey.id}'),
                 types.InlineKeyboardButton('Результаты опроса', callback_data=f'results_{survey.id}'),
                 types.InlineKeyboardButton('Главное меню', callback_data='main_menu')
                 ]

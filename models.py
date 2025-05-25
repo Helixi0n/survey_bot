@@ -38,9 +38,11 @@ class Model:
         answers_data = {}
 
         quest = session.query(Question).filter(Question.survey_id == survey_id).all()
-        for answer in quest:
-            for key, value in answer.answers_data.items():
+        for ans in quest:
+            for key, value in ans.answers_data.items():
                 answers_data[key] = 0
+                stmt = update(Question).where(Question.id == ans.id).values(answers_data=answers_data)
+                session.execute(stmt)
         
         for ans in answer.split('\n'):
             answers_data[ans] = 0
@@ -142,6 +144,8 @@ class Model:
 
             stmt = update(Question).where(Question.id == question.id).values(answers_data=answers_data)
             session.execute(stmt)
+
+
                 
         association = user_survey_association.insert().values(user_id=user_id, survey_id=survey_id)
         session.execute(association)
