@@ -1,5 +1,5 @@
 from database import get_connection, Survey, Question, User, user_survey_association
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 
 session = get_connection()
 
@@ -139,7 +139,9 @@ class Model:
                 answers_data = question.answers_data
                 if key == question.question_title:
                     answers_data[value] += 1
-            question.answers_data = answers_data
+
+            stmt = update(Question).where(Question.id == question.id).values(answers_data=answers_data)
+            session.execute(stmt)
                 
         association = user_survey_association.insert().values(user_id=user_id, survey_id=survey_id)
         session.execute(association)
