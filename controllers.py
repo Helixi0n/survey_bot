@@ -103,7 +103,7 @@ class Controller:
             if Model.is_this_my_survey(callback.message.chat.id, survey.id):
                 buttons = [
                 types.InlineKeyboardButton('Добавить вопрос', callback_data=f'update_survey_{survey.id}'),
-                types.InlineKeyboardButton('Удалить опрос ❌', callback_data=f'delete_survey_{survey.id}'),
+                types.InlineKeyboardButton('Удалить опрос', callback_data=f'delete_survey_{survey.id}'),
                 types.InlineKeyboardButton('Результаты опроса', callback_data=f'results_{survey.id}'),
                 types.InlineKeyboardButton('Главное меню', callback_data='main_menu')
                 ]
