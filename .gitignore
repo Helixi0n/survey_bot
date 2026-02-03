@@ -1,3 +1,4 @@
 constants.py
-__pycache__
 data.db
+__pycache__
+venv
